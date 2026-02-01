@@ -14,10 +14,12 @@ public class ImageFormatter {
         this.step = step;
     }
 
-    public byte[] dilate(byte[] binaryImage, int width, int height) {
+    public void dilate(byte[] binaryImage, int width, int height) {
+        byte[] source = binaryImage.clone();
+
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                if (binaryImage[y * width + x] == 1) {
+                if (source[y * width + x] == 1) {
                     for (int dy = -step; dy <= step; dy++) {
                         for (int dx = -step; dx <= step; dx++) {
                             int nx = x + dx;
@@ -36,7 +38,7 @@ public class ImageFormatter {
             }
         }
 
-        return binaryImage;
+//        return binaryImage;
     }
 
 

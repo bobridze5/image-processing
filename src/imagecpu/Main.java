@@ -1,17 +1,26 @@
 package imagecpu;
 
+import java.awt.image.BufferedImage;
 import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        ImageLoader loader = new ImageLoader(128, "images/pic1.png", "images/пик2.png");
-        List<BinaryImageData> imageData = loader.getImageData();
-        ImageFormatter imageFormatter = new ImageFormatter();
+        String outputPath = "images/results";
+        Binarizer binarizer = new Binarizer(180);
+        ImageFormatter formatter = new ImageFormatter(3);
 
-        for (int i = 0; i < imageData.size(); i++) {
-            BinaryImageData data = imageData.get(i);
-            byte[] newImage = imageFormatter.dilate(data.pixels(), data.height(), data.width());
+        List<BufferedImage> bufferedImages = ImageUtils.load(
+                "images/pic3.jpg",
+                "images/pic4.jpg",
+                "images/pic5.jpg"
 
+        );
+        List<BinaryImageData> binaryImageDataList = binarizer.binarize(bufferedImages);
+
+        for (BinaryImageData data : binaryImageDataList) {
+            formatter.dilate(data.pixels(), data.width(), data.height());
+            BufferedImage image = ImageUtils.toBufferedImage(data.pixels(), data.width(), data.height());
+            ImageUtils.save(image, outputPath);
         }
 
 

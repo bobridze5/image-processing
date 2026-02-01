@@ -4,6 +4,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ImageLoader {
@@ -17,20 +18,21 @@ public class ImageLoader {
     }
 
 
-    public byte[][] getBinaryImages() {
-        byte[][] images = new byte[paths.size()][];
-        for (int i = 0; i < paths.size(); i++) {
-            String path = paths.get(i);
+    public List<BinaryImageData> getImageData() {
+        List<BinaryImageData> data = new ArrayList<>();
+        for (String path : paths) {
             BufferedImage image = getImage(path);
+
             if (image == null) {
                 throw new IllegalStateException("Не удалось загрузить изображение: " + path);
             }
 
-            images[i] = convertImageToByteArray(image);
+            BinaryImageData imageData = convertImageToImageData(image);
+            data.add(imageData);
         }
 
 
-        return images;
+        return data;
     }
 
     private void validateThreshold(int intensity) {
@@ -39,19 +41,19 @@ public class ImageLoader {
         }
     }
 
-    private byte[] convertImageToByteArray(BufferedImage image) {
+    private BinaryImageData convertImageToImageData(BufferedImage image) {
         int w = image.getWidth();
         int h = image.getHeight();
-        byte[] data = new byte[h * w];
+        byte[] pixels = new byte[h * w];
 
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
                 int rgb = image.getRGB(x, y);
-                data[y * w + x] = transformPixel(rgb);
+                pixels[y * w + x] = transformPixel(rgb);
             }
         }
 
-        return data;
+        return new BinaryImageData(pixels, w, h);
     }
 
     private BufferedImage getImage(String path) {

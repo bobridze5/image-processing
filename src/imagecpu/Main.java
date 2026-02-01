@@ -7,13 +7,11 @@ public class Main {
     public static void main(String[] args) {
         String outputPath = "images/results";
         Binarizer binarizer = new Binarizer(180);
-        ImageFormatter formatter = new ImageFormatter(3);
+        ImageFormatter formatter = new ImageFormatter(2);
 
         List<BufferedImage> bufferedImages = ImageUtils.load(
                 "images/pic3.jpg",
-                "images/pic4.jpg",
-                "images/pic5.jpg"
-
+                "img.jpg"
         );
         List<BinaryImageData> binaryImageDataList = binarizer.binarize(bufferedImages);
 

@@ -1,7 +1,5 @@
 package imagecpu;
 
-import java.util.Arrays;
-
 public class ImageFormatter {
     private final int step;
 
@@ -38,15 +36,12 @@ public class ImageFormatter {
             }
         }
 
-//        return binaryImage;
     }
-
 
     private void validateStep(int step) {
         if (step < 1 || step > 3) {
             throw new IllegalArgumentException("Шаг должен быть 1, 2 или  3");
         }
     }
-
 
 }

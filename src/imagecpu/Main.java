@@ -20,7 +20,6 @@ public class Main {
             BufferedImage image = ImageUtils.toBufferedImage(data.pixels(), data.width(), data.height());
             ImageUtils.save(image, outputPath);
         }
-
-
+        
     }
 }

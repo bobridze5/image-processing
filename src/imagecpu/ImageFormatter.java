@@ -1,25 +1,86 @@
 package imagecpu;
 
-public class ImageFormatter {
+import java.util.ArrayList;
+import java.util.List;
+
+public class ImageFormatter implements Formatter {
     private final int step;
+    private final int threadCount;
 
     public ImageFormatter() {
-        this(1);
+        this(1, Runtime.getRuntime().availableProcessors());
     }
 
     public ImageFormatter(int step) {
-        validateStep(step);
-        this.step = step;
+        this(step, Runtime.getRuntime().availableProcessors());
     }
 
+    public ImageFormatter(int step, int threadCount) {
+        validateStep(step);
+        this.step = step;
+        this.threadCount = threadCount;
+    }
+
+    @Override
     public void dilate(byte[][] binaryImage, int width, int height) {
         byte[][] source = Utils.deepCopy(binaryImage);
+        if (threadCount > 1) {
+            applyDilateParallel(source, binaryImage, width, height);
+        } else {
+            applyDilate(source, binaryImage, 0, width, 0, height);
+        }
 
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
+    }
 
+    private void applyDilateParallel(byte[][] source, byte[][] target, int width, int height) {
+        int rows = (int) Math.sqrt(threadCount);
+        int cols = (int) Math.ceil((double) threadCount / rows);
+
+        int tileWidth = width / cols;
+        int tileHeight = height / rows;
+
+        List<Thread> threads = new ArrayList<>();
+
+        for (int y = 0; y < rows; y++) {
+            for (int x = 0; x < cols; x++) {
+                if (threads.size() >= threadCount) break;
+
+                int xStart = x * tileWidth;
+                int xEnd = (x == cols - 1) ? width : (x + 1) * tileWidth;
+                int yStart = y * tileHeight;
+                int yEnd = (y == rows - 1) ? height : (y + 1) * tileHeight;
+
+                Thread thread = new Thread(() -> applyDilate(source, target, xStart, xEnd, yStart, yEnd));
+                threads.add(thread);
+            }
+        }
+
+        threads.forEach(Thread::start);
+
+        try {
+            for (Thread t : threads) {
+                t.join();
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+    }
+
+    private void applyDilate(
+            byte[][] source,
+            byte[][] target,
+            int xStart,
+            int xEnd,
+            int yStart,
+            int yEnd
+    ) {
+        int width = source[0].length;
+        int height = source.length;
+
+        for (int y = yStart; y < yEnd; y++) {
+            for (int x = xStart; x < xEnd; x++) {
                 if (source[y][x] == 1) {
-
                     for (int dy = -step; dy <= step; dy++) {
                         for (int dx = -step; dx <= step; dx++) {
                             int nx = x + dx;
@@ -29,15 +90,12 @@ public class ImageFormatter {
                                 continue;
                             }
 
-                            binaryImage[ny][nx] = 1;
-
+                            target[ny][nx] = 1;
                         }
                     }
                 }
-
             }
         }
-
     }
 
     private void validateStep(int step) {
@@ -45,4 +103,5 @@ public class ImageFormatter {
             throw new IllegalArgumentException("Шаг должен быть 1, 2 или  3");
         }
     }
+
 }

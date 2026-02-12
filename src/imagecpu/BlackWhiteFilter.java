@@ -9,8 +9,10 @@ public class BlackWhiteFilter extends BaseFilter {
     }
 
     @Override
-    protected byte handleIntensity(int intensity) {
-        return (intensity > threshold) ? (byte) 1 : (byte) 0;
+    protected void handleChannels(byte[][] rA, byte[][] gA, byte[][] bA, int x, int y, int r, int g, int b) {
+        int intensity = (r + g + b) / 3;
+        byte value = (intensity > threshold) ? (byte) 255 : (byte) 0;
+        rA[y][x] = gA[y][x] = bA[y][x] = value;
     }
 
     private void validateThreshold(int intensity) {

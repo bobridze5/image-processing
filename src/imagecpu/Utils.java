@@ -12,4 +12,19 @@ public final class Utils {
 
         return result;
     }
+
+    public static ImageData deepCopy(ImageData data) {
+        int h = data.getHeight();
+        int w = data.getWidth();
+
+        byte[][] rCopy = deepCopy(data.getRed());
+
+        if (data.isColor()) {
+            byte[][] gCopy = deepCopy(data.getGreen());
+            byte[][] bCopy = deepCopy(data.getBlue());
+            return new ImageData(rCopy, gCopy, bCopy, w, h);
+        } else {
+            return new ImageData(rCopy, w, h);
+        }
+    }
 }

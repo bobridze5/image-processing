@@ -1,11 +1,13 @@
 package imagecpu;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
 public class ImageAnalyzer {
-    private final Filter<BufferedImage, BinaryImageData> filter;
+    private final Filter<BufferedImage, ImageData> filter;
     private final ImageOperation operation;
+    private final ImageFormatter formatter;
     private final String outputPath;
     private final int testRuns;
 
@@ -15,25 +17,24 @@ public class ImageAnalyzer {
         this.operation = builder.operation;
         this.outputPath = builder.outputPath;
         this.testRuns = builder.testRuns;
+        this.formatter = builder.formatter;
     }
 
     public void analyze(String[] ImagesPaths) {
         List<BufferedImage> bufferedImages = ImageUtils.load(ImagesPaths);
-        List<BinaryImageData> binaryImageDataList = filter.filter(bufferedImages);
+        List<ImageData> imageDataList = filter.filter(bufferedImages);
 
-        for (int i = 0; i < binaryImageDataList.size(); i++) {
-            BinaryImageData data = binaryImageDataList.get(i);
-
-            byte[][] original = data.pixels();
-            byte[][] result = null;
+        for (int i = 0; i < imageDataList.size(); i++) {
+            ImageData data = imageDataList.get(i);
+            ImageData result = null;
             Timer[] timers = new Timer[testRuns];
 
             for (int k = 0; k < testRuns; k++) {
-                byte[][] copy = Utils.deepCopy(original);
+                ImageData copy = Utils.deepCopy(data);
                 Timer timer = new Timer();
 
                 timer.start();
-                operation.apply(copy, data.width(), data.height());
+                operation.apply(copy);
                 timer.end();
 
                 timers[k] = timer;
@@ -43,11 +44,13 @@ public class ImageAnalyzer {
                 }
             }
 
-            BufferedImage image = ImageUtils.toBufferedImage(result, data.width(), data.height());
+            BufferedImage image = ImageUtils.toBufferedImage(result);
             ImageUtils.save(image, outputPath);
 
             StatisticsPrinter.print(ImagesPaths[i], timers);
         }
+
+        formatter.shutdown();
     }
 
     public static Builder builder() {
@@ -55,13 +58,13 @@ public class ImageAnalyzer {
     }
 
     public static class Builder {
-        private Filter<BufferedImage, BinaryImageData> filter;
+        private Filter<BufferedImage, ImageData> filter;
         private ImageFormatter formatter;
         private ImageOperation operation;
         private String outputPath = "results";
         private int testRuns = 1;
 
-        public Builder setFilter(Filter<BufferedImage, BinaryImageData> filter) {
+        public Builder setFilter(Filter<BufferedImage, ImageData> filter) {
             this.filter = filter;
             return this;
         }
@@ -72,12 +75,12 @@ public class ImageAnalyzer {
         }
 
         public Builder setOperationDilate(int step) {
-            this.operation = (pixels, width, height) -> formatter.dilate(pixels, width, height, step);
+            this.operation = (data) -> formatter.dilate(data, step);
             return this;
         }
 
-        public Builder setOperationConvolution(float[][] kernel) {
-            this.operation = (pixels, width, height) -> formatter.convolve(pixels, width, height);
+        public Builder setOperationSharpness() {
+            this.operation = (data) -> formatter.sharpness(data);
             return this;
         }
 

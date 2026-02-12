@@ -3,36 +3,33 @@ package imagecpu;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ImageFormatter implements Formatter {
-    private final int step;
-    private final int threadCount;
-
+public class ImageFormatter extends BaseFormatter {
     public ImageFormatter() {
-        this(1, Runtime.getRuntime().availableProcessors());
+        this(Runtime.getRuntime().availableProcessors());
     }
 
-    public ImageFormatter(int step) {
-        this(step, Runtime.getRuntime().availableProcessors());
+    public ImageFormatter(int threadCount) {
+        super(threadCount);
     }
 
-    public ImageFormatter(int step, int threadCount) {
+
+    public void convolve(byte[][] pixels, int width, int height) {
+
+    }
+
+
+    public void dilate(byte[][] binaryImage, int width, int height, int step) {
         validateStep(step);
-        this.step = step;
-        this.threadCount = threadCount;
-    }
-
-    @Override
-    public void dilate(byte[][] binaryImage, int width, int height) {
         byte[][] source = Utils.deepCopy(binaryImage);
         if (threadCount > 1) {
-            applyDilateParallel(source, binaryImage, width, height);
+            applyDilateParallel(source, binaryImage, width, height, step);
         } else {
-            applyDilate(source, binaryImage, 0, width, 0, height);
+            applyDilate(source, binaryImage, 0, width, 0, height, step);
         }
 
     }
 
-    private void applyDilateParallel(byte[][] source, byte[][] target, int width, int height) {
+    private void applyDilateParallel(byte[][] source, byte[][] target, int width, int height, int step) {
         int rows = (int) Math.sqrt(threadCount);
         int cols = (int) Math.ceil((double) threadCount / rows);
 
@@ -50,7 +47,7 @@ public class ImageFormatter implements Formatter {
                 int yStart = y * tileHeight;
                 int yEnd = (y == rows - 1) ? height : (y + 1) * tileHeight;
 
-                Thread thread = new Thread(() -> applyDilate(source, target, xStart, xEnd, yStart, yEnd));
+                Thread thread = new Thread(() -> applyDilate(source, target, xStart, xEnd, yStart, yEnd, step));
                 threads.add(thread);
             }
         }
@@ -73,7 +70,8 @@ public class ImageFormatter implements Formatter {
             int xStart,
             int xEnd,
             int yStart,
-            int yEnd
+            int yEnd,
+            int step
     ) {
         int width = source[0].length;
         int height = source.length;

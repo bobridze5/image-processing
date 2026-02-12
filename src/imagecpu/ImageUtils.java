@@ -34,12 +34,14 @@ public final class ImageUtils {
         return result;
     }
 
-    public static BufferedImage toBufferedImage(byte[] pixels, int width, int height) {
+    public static BufferedImage toBufferedImage(byte[][] pixels, int width, int height) {
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         int[] rgb = new int[width * height];
 
-        for (int i = 0; i < rgb.length; i++) {
-            rgb[i] = (pixels[i] == 1) ? 0xFFFFFF : 0x000000;
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                rgb[y * width + x] = (pixels[y][x] == 1) ? 0xFFFFFF : 0x000000;
+            }
         }
 
         image.setRGB(0, 0, width, height, rgb, 0, width);

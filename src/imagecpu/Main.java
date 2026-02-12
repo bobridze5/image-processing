@@ -1,7 +1,6 @@
 package imagecpu;
 
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
 import java.util.List;
 
 public class Main {
@@ -25,12 +24,12 @@ public class Main {
             BinaryImageData data = binaryImageDataList.get(i);
 
             int runs = 3;
-            byte[] original = data.pixels();
-            byte[] result = null;
+            byte[][] original = data.pixels();
+            byte[][] result = null;
             Timer[] timers = new Timer[runs];
 
             for (int k = 0; k < runs; k++) {
-                byte[] copy = Arrays.copyOf(original, original.length);
+                byte[][] copy = Utils.deepCopy(original);
                 Timer timer = new Timer();
 
                 timer.start();

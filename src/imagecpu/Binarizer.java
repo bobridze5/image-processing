@@ -24,12 +24,12 @@ public class Binarizer {
     public BinaryImageData binarize(BufferedImage image) {
         int w = image.getWidth();
         int h = image.getHeight();
-        byte[] pixels = new byte[h * w];
+        byte[][] pixels = new byte[h][w];
 
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
                 int rgb = image.getRGB(x, y);
-                pixels[y * w + x] = transformPixel(rgb);
+                pixels[y][x] = transformPixel(rgb);
             }
         }
 

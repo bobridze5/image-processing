@@ -15,7 +15,7 @@
 Установить значение скалярной величины - порога Threshold (любое число от 1 до 255). Те значения интенсивности, которые меньше порогового значения установить в 0, а которые больше Threshold установить в 1.
 Выполнить операцию наращивания (диляции/ дилатации) [cтатья на habr](https://habr.com/ru/post/113626/) или https://intuit.ru/studies/courses/10621/1105/lecture/17989?page=4 над полученной матрицей из 0 и 1. <br> **Примечание**: нужно задать шаг наращивания (любое значение от 1, 2 или 3). Получить изображение из результата путем установки вместо значений 0 – пикселей черного цвета (0, 0, 0), и вместо значений 1 – пикселей белого цвета. Сохранить результат в файл.
 
-## Пример выполнения
+## Пример выполнения дилатации (наращивание пикселей)
 
 Исходное изображение (размер изображения 1920×2560): 
 ![img.jpg](img.jpg)
@@ -37,39 +37,39 @@
 ```java
 package imagecpu;
 
-import java.awt.image.BufferedImage;
-import java.util.List;
-
 public class Main {
     public static void main(String[] args) {
-        // Папка для сохранения результатов
-        String outputPath = "images/results";
-
-        // Создание объектов для обработки
-        Binarizer binarizer = new Binarizer(180); // порог бинаризации
-        ImageFormatter formatter = new ImageFormatter(3); // шаг дилатации
-
-        // Загрузка изображений
-        List<BufferedImage> bufferedImages = ImageUtils.load(
-                "images/pic3.jpg",
-                "images/pic4.jpg",
-                "images/pic5.jpg"
-        );
-
-        // Преобразование в бинарные изображения
-        List<BinaryImageData> binaryImageDataList = binarizer.binarize(bufferedImages);
-
-        // Обработка и сохранение
-        for (BinaryImageData data : binaryImageDataList) {
-            // Расширение белых пикселей (дилатация)
-            formatter.dilate(data.pixels(), data.width(), data.height());
-
-            // Преобразование массива байт в BufferedImage
-            BufferedImage image = ImageUtils.toBufferedImage(data.pixels(), data.width(), data.height());
-
-            // Сохранение изображения (имя генерируется автоматически)
-            ImageUtils.save(image, outputPath);
-        }
+        // Массив изображений
+        String[] images = {
+                "img.jpg",
+                "images/1024x768.jpg",
+                "images/1280x960.jpg",
+                "images/2048x1536.jpg",
+                "images/5464x6830.jpg",
+                "images/8736x4896.jpg",
+                "images/9408x5376.jpg"
+        };
+        
+        // Создать анализатор изображений
+        ImageAnalyzer analyzer = ImageAnalyzer.builder()
+                // Установить нужный фильтр
+                .setFilter(new InversionFilter())
+//                .setFilter(new BlackWhiteFilter(120))
+                // Установить класс для работы с изображением и задать количество потоков
+                .setFormatter(new ImageFormatter(16))
+                // Задать нужную операцию
+                .setOperationSharpness()
+//                .setOperationDilate(1)
+                // Указать путь вывода новых изображений
+                .setOutputPath("images/results")
+                // Указать количество тестов 
+                .setTestRuns(3)
+                // Собрать
+                .build();
+        
+        // Запустить анализ
+        analyzer.analyze(images);
     }
 }
+
 
